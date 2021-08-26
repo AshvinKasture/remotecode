@@ -1,21 +1,52 @@
+import threading
+import time
 import socket
-import pyautogui as pag
-
-server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-server.bind(('192.168.29.184', 1024))
 
 
-server.listen(10)
+def print_cube(num):
+    for i in range(num):
+        time.sleep(0.2)
+        print("Cube: {} = {}".format(i, i*i*i))
 
-(client, address) = server.accept()
 
-print(f"connected to {address}")
+def print_square(num):
+    for i in range(num):
+        print("Square: {} = {}".format(i, i * i))
+        time.sleep(0.5)
 
-msg = ''
 
-while True:
-    data = client.recv(1024)
-    msg = data.decode('utf-8').strip()
-    print(msg)
-    exec(msg)
+def getIP():
+    return socket.gethostbyname(socket.gethostname())
+
+
+def checkIPchange():
+    global changeIP
+    while True:
+        ip = getIP()
+        print(f'ip is {ip}')
+        time.sleep(10)
+        newIP = getIP()
+        print(f'newIP is {newIP}')
+        if ip != newIP:
+            print('ip changed')
+            changeIP = True
+            break
+        else:
+            print('not changed')
+
+
+changeIP = False
+
+
+if __name__ == "__main__":
+    t1 = threading.Thread(target=print_square, args=(10,))
+    t2 = threading.Thread(target=print_cube, args=(1000,))
+    t1 = threading.Thread(target=checkIPchange)
+
+    t1.start()
+    t2.start()
+
+    t1.join()
+    t2.join()
+
+    print("Done!")
