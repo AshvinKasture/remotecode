@@ -4,7 +4,6 @@ import pyautogui as pag
 import time
 import threading
 
-socket.setdefaulttimeout(10)
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 
@@ -31,7 +30,9 @@ def checkIPchange():
 
 def startSockets():
     global threadGoing
-    ip = getIP()
+    # ip = getIP()
+    # ip = '192.168.1.7'
+    ip = '192.168.29.184'
     port = 1024
 
     server.bind((ip, port))
@@ -69,4 +70,4 @@ socketThread = threading.Thread(target=startSockets)
 ipThread = threading.Thread(target=checkIPchange)
 
 socketThread.start()
-ipThread.start()
+# ipThread.start()

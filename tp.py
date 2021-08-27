@@ -1,52 +1,45 @@
-import threading
-import time
 import socket
+import ifaddr
+
+print("Running...")
+
+# socket.setdefaulttimeout(60)
 
 
-def print_cube(num):
-    for i in range(num):
-        time.sleep(0.2)
-        print("Cube: {} = {}".format(i, i*i*i))
+def getAllIPs():
+    allIPs = []
+    adapters = ifaddr.get_adapters()
+    for adapter in adapters:
+        for ip in adapter.ips:
+            if ip.network_prefix == 24:
+                allIPs.append(ip.ip)
+    return allIPs
 
 
-def print_square(num):
-    for i in range(num):
-        print("Square: {} = {}".format(i, i * i))
-        time.sleep(0.5)
+print(getAllIPs())
+
+exit(0)
+
+server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+IP = socket.gethostbyname(socket.gethostname())
+PORT = 1024
+server.bind((IP, PORT))
+print(f'Bind to {IP}:{PORT}')
+
+server.listen(10)
 
 
-def getIP():
-    return socket.gethostbyname(socket.gethostname())
-
-
-def checkIPchange():
-    global changeIP
+while True:
+    (client, addr) = server.accept()
+    print(f'Connected to {addr}')
+    client.send('You are connected to server'.encode('utf-8'))
     while True:
-        ip = getIP()
-        print(f'ip is {ip}')
-        time.sleep(10)
-        newIP = getIP()
-        print(f'newIP is {newIP}')
-        if ip != newIP:
-            print('ip changed')
-            changeIP = True
+        data = client.recv(1024)
+        if not data:
+            break
+        msg = data.decode('utf-8').strip()
+        if msg == 'exit':
             break
         else:
-            print('not changed')
-
-
-changeIP = False
-
-
-if __name__ == "__main__":
-    t1 = threading.Thread(target=print_square, args=(10,))
-    t2 = threading.Thread(target=print_cube, args=(1000,))
-    t1 = threading.Thread(target=checkIPchange)
-
-    t1.start()
-    t2.start()
-
-    t1.join()
-    t2.join()
-
-    print("Done!")
+            print(msg)
